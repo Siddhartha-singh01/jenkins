@@ -37,6 +37,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import hudson.model.User;
+import hudson.model.ManagementLink;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;

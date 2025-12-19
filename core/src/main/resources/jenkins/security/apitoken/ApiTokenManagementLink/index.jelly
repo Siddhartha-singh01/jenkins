@@ -1,0 +1,136 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="${it.displayName}" permission="${it.requiredPermission}">
+    <st:include page="sidepanel.jelly" it="${app}"/>
+    <l:main-panel>
+      <h1>
+        <l:icon class="${it.iconFileName}"/>
+        ${it.displayName}
+      </h1>
+      
+      <div class="jenkins-section">
+        <p>${it.description}</p>
+      </div>
+
+      <j:set var="tokens" value="${it.getAllTokens()}"/>
+      
+      <j:choose>
+        <j:when test="${tokens.isEmpty()}">
+          <div class="alert alert-info">
+            ${%noTokens}
+          </div>
+        </j:when>
+        <j:otherwise>
+          <div class="jenkins-section">
+            <div class="jenkins-form-item">
+              <input type="text" id="filter" placeholder="${%filterPlaceholder}" class="jenkins-input" 
+                     style="width: 300px; margin-bottom: 15px;"/>
+            </div>
+            
+            <table class="jenkins-table sortable" id="token-table">
+              <thead>
+                <tr>
+                  <th>${%userColumn}</th>
+                  <th>${%tokenNameColumn}</th>
+                  <th>${%createdColumn}</th>
+                  <th>${%lastUsedColumn}</th>
+                  <th>${%useCountColumn}</th>
+                  <th>${%actionsColumn}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <j:forEach var="token" items="${tokens}">
+                  <tr class="token-row" data-user="${token.userId}" data-token="${token.tokenName}">
+                    <td>
+                      <a href="${rootURL}/user/${token.userId}">
+                        <strong>${token.userFullName}</strong>
+                      </a>
+                      <br/>
+                      <span style="color: #666; font-size: 0.9em;">${token.userId}</span>
+                    </td>
+                    <td>
+                      ${token.tokenName}
+                      <j:if test="${token.legacy}">
+                        <span class="badge badge-warning" style="margin-left: 5px;">${%legacyBadge}</span>
+                      </j:if>
+                    </td>
+                    <td>
+                      <j:choose>
+                        <j:when test="${token.creationDate != null}">
+                          <j:set var="creationDateStr" value="${token.creationDate}"/>
+                          ${%createdDate(creationDateStr)}
+                          <br/>
+                          <span style="color: #666; font-size: 0.9em;">${token.createdDaysAgo}</span>
+                        </j:when>
+                        <j:otherwise>
+                          <span style="color: #999;">${%unknownDate}</span>
+                        </j:otherwise>
+                      </j:choose>
+                    </td>
+                    <td>
+                      <j:choose>
+                        <j:when test="${token.lastUseDate != null}">
+                          <j:set var="lastUseDateStr" value="${token.lastUseDate}"/>
+                          ${%lastUsedDate(lastUseDateStr)}
+                          <br/>
+                          <span style="color: #666; font-size: 0.9em;">${token.lastUsedDaysAgo}</span>
+                        </j:when>
+                        <j:otherwise>
+                          <span style="color: #999;">${%neverUsed}</span>
+                        </j:otherwise>
+                      </j:choose>
+                    </td>
+                    <td>
+                      <j:choose>
+                        <j:when test="${token.useCounter > 0}">
+                          <strong>${token.useCounter}</strong>
+                        </j:when>
+                        <j:otherwise>
+                          <span style="color: #999;">0</span>
+                        </j:otherwise>
+                      </j:choose>
+                    </td>
+                    <td>
+                      <form method="post" action="delete" style="display: inline;">
+                        <input type="hidden" name="userId" value="${token.userId}"/>
+                        <input type="hidden" name="tokenUuid" value="${token.tokenUuid}"/>
+                        <button type="submit" class="jenkins-button jenkins-button--destructive" 
+                                onclick="return confirm('${%confirmDelete(token.tokenName, token.userFullName)}');">
+                          <l:icon class="symbol-trash"/>
+                          ${%deleteButton}
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                </j:forEach>
+              </tbody>
+            </table>
+            
+            <div style="margin-top: 20px; color: #666;">
+              ${%totalTokens(tokens.size())}
+            </div>
+          </div>
+        </j:otherwise>
+      </j:choose>
+      
+      <script>
+        // Simple client-side filter
+        document.getElementById('filter').addEventListener('keyup', function() {
+          var filterValue = this.value.toLowerCase();
+          var rows = document.querySelectorAll('.token-row');
+          
+          rows.forEach(function(row) {
+            var user = row.getAttribute('data-user').toLowerCase();
+            var token = row.getAttribute('data-token').toLowerCase();
+            
+            if (user.includes(filterValue) || token.includes(filterValue)) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        });
+      </script>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -3,7 +3,6 @@ package jenkins.model.run;
 import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Run;
-import hudson.security.Permission;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
@@ -33,7 +32,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
             return Set.of();
         }
 
-        if (target.isKeepLog() && target.hasPermission(Permission.DELETE)) {
+        if (target.isKeepLog() && target.hasPermission(Run.DELETE)) {
             return Set.of(new Action() {
                 @Override
                 public String getDisplayName() {
@@ -62,7 +61,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
             });
         }
 
-        if (!target.isKeepLog() && target.hasPermission(Permission.UPDATE)) {
+        if (!target.isKeepLog() && target.hasPermission(Run.UPDATE)) {
             return Set.of(new Action() {
                 @Override
                 public String getDisplayName() {
